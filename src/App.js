@@ -3,10 +3,12 @@ import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
+import Image from 'react-bootstrap/Image';
 
 const CityForm = () => {
   const [city, setCity] = useState('');
   const [location, setLocation] = useState(null);
+  const [mapUrl, setMapUrl] = useState(null);
 
   const getLocation = async city => {
     const response = await axios.get(`https://us1.locationiq.com/v1/search.php`, {
@@ -19,10 +21,17 @@ const CityForm = () => {
     return response.data[0];
   };
 
+  const getMap = (lat, lon) => {
+    const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATIONIQ_API_KEY}&center=${lat},${lon}&zoom=10`;
+    return mapUrl;
+  }
+
   const handleSubmit = async event => {
     event.preventDefault();
     const locationData = await getLocation(city);
     setLocation(locationData);
+    const mapUrl = getMap(locationData.lat, locationData.lon);
+    setMapUrl(mapUrl);
   };
 
   return (
@@ -51,6 +60,7 @@ const CityForm = () => {
               <br />
               Longitude: {location.lon}
             </Card.Text>
+            {mapUrl && <Image src={mapUrl} />}
           </Card.Body>
         </Card>
       )}

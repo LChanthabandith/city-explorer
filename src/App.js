@@ -15,19 +15,33 @@ const CityForm = () => {
     const [weather, setWeather] = useState([]);
 
     const getWeather = async (lat, lon) => {
-        try {
-            const response = await axios.get('/weather', {
-                params: {
-                    lat: lat,
-                    lon: lon
-                }
-            });
-            setWeather([response.data]);
-        } catch (error) {
-            console.error("Error fetching weather data", error);
-        }
-    };
+      try {
+          const response = await axios.get('/weather', {
+              params: {
+                  lat: lat,
+                  lon: lon
+              }
+          });
+  
+          if (response.status === 200 && response.data) {
+              setWeather([response.data]);
+          } else {
+              console.error("Weather data not found in response.");
+          }
+      } catch (error) {
+          if (error.response) {
 
+              console.error("Error fetching weather data:", error.response.data);
+          } else if (error.request) {
+           
+              console.error("No response received:", error.request);
+          } else {
+            
+              console.error("Error setting up request:", error.message);
+          }
+      }
+  };
+  
     const getLocation = async city => {
         try {
             const response = await axios.get(`https://us1.locationiq.com/v1/search.php`, {

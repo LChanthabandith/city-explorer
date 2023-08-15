@@ -5,12 +5,29 @@ import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import Alert from 'react-bootstrap/Alert';
+import Movies from './components/Movies';
 
 const CityForm = () => {
   const [city, setCity] = useState('');
   const [location, setLocation] = useState(null);
   const [mapUrl, setMapUrl] = useState(null);
   const [error, setError] = useState(null);
+  const [movies, setMovies] = useState(null);
+  const [weather, setWeather] = useState([]);
+
+  const getWeather = async (lat, lon) => {
+    try {
+        const response = await axios.get('/weather', {
+            params: {
+                lat: lat,
+                lon: lon
+            }
+        });
+        setWeather(response.data);
+    } catch (error) {
+        console.error("Error fetching weather data", error);
+    }
+};
 
   const getLocation = async city => {
     try {
@@ -36,8 +53,24 @@ const CityForm = () => {
     return mapUrl;
   }
 
+  const getMovies = async city => {
+    try {
+      const response = await axios.get(`YOUR_BACKEND_ENDPOINT/movies`, {
+        params: {
+          city: city,
+          apiKey: process.env.REACT_APP_MOVIE_API_KEY
+        }
+      });
+      setMovies(response.data);
+    } catch (error) {
+      console.error('Error fetching movie data:', error);
+    }
+  };
+  
+
   const handleSubmit = async event => {
     event.preventDefault();
+
     if(city.trim() === '') {
       setError({
         status: 'Input Error',
@@ -45,11 +78,14 @@ const CityForm = () => {
       });
       return;
     }
+
     const locationData = await getLocation(city);
     if (locationData) {
       setLocation(locationData);
       const mapUrl = getMap(locationData.lat, locationData.lon);
       setMapUrl(mapUrl);
+      getWeather(locationData.lat, locationData.lon);
+      await getMovies(city);
     }
   };
 
@@ -70,6 +106,12 @@ const CityForm = () => {
         </Button>
       </Form>
 
+      {weather.map(day => (
+                <div key={day.date}>
+                    {day.date}: {day.description}
+                </div>
+            ))}     
+
       {error && (
         <Alert variant="danger">
           Error {error.status}: {error.message}
@@ -89,9 +131,9 @@ const CityForm = () => {
           </Card.Body>
         </Card>
       )}
-    </>
-  );
-};
+
+<Movies movies={movies} />
+  </>
+);
 
 export default CityForm;
-

@@ -79,86 +79,87 @@ const CityForm = () => {
     };
 
     const handleSubmit = async event => {
-        event.preventDefault();
+      event.preventDefault();
+      setError(null);
 
-        if(city.trim() === '') {
-            setError({
-                status: 'Input Error',
-                message: 'Please enter a valid city name.'
-            });
-            return;
-        }
+      if(city.trim() === '') {
+          setError({
+              status: 'Input Error',
+              message: 'Please enter a valid city name.'
+          });
+          return;
+      }
 
-        const locationData = await getLocation(city);
-        if (locationData) {
-            setLocation(locationData);
-            const mapUrl = getMap(locationData.lat, locationData.lon);
-            setMapUrl(mapUrl);
-            getWeather(locationData.lat, locationData.lon);
-            await getMovies(city);
-        }
-    };
+      const locationData = await getLocation(city);
+      if (locationData) {
+          setLocation(locationData);
+          const mapUrl = getMap(locationData.lat, locationData.lon);
+          setMapUrl(mapUrl);
+          getWeather(locationData.lat, locationData.lon);
+          await getMovies(city);
+      }
+  };
 
-    return (
-        <>
-            <Form onSubmit={handleSubmit}>
-                <Form.Group>
-                    <Form.Label>City</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={city}
-                        onChange={e => setCity(e.target.value)}
-                        placeholder="Enter city"
-                    />
-                </Form.Group>
-                <Button variant="primary" type="submit">
-                    Explore!
-                </Button>
-            </Form>
+  return (
+    <>
+        <Form onSubmit={handleSubmit}>
+            <Form.Group>
+                <Form.Label>City</Form.Label>
+                <Form.Control
+                    type="text"
+                    value={city}
+                    onChange={e => setCity(e.target.value)}
+                    placeholder="Enter city"
+                />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+                Explore!
+            </Button>
+        </Form>
 
-            {weather.map(day => (
-                <div key={day.date}>
-                    {day.date}: {day.description}
-                </div>
-            ))}
+        {error && (
+            <Alert variant="danger">
+                Error {error.status}: {error.message}
+            </Alert>
+        )}
 
-            {error && (
-                <Alert variant="danger">
-                    Error {error.status}: {error.message}
-                </Alert>
-            )}
+        {location && (
+            <Card style={{ width: '18rem', marginTop: '20px' }}>
+                <Card.Body>
+                    <Card.Title>{location.display_name}</Card.Title>
+                    <Card.Text>
+                        Latitude: {location.lat}
+                        <br />
+                        Longitude: {location.lon}
+                    </Card.Text>
+                    {mapUrl && <Image src={mapUrl} />}
+                </Card.Body>
+            </Card>
+        )}
 
-            {location && (
-                <Card style={{ width: '18rem' }}>
-                    <Card.Body>
-                        <Card.Title>{location.display_name}</Card.Title>
-                        <Card.Text>
-                            Latitude: {location.lat}
-                            <br />
-                            Longitude: {location.lon}
-                        </Card.Text>
-                        {mapUrl && <Image src={mapUrl} />}
-                    </Card.Body>
-                </Card>
-            )}
+        {weather.map(day => (
+            <div key={day.date}>
+                {day.date}: {day.description}
+            </div>
+        ))}
 
-            {movies && movies.map((movie, index) => (
-                <Card key={index} style={{ width: '18rem', marginTop: '20px' }}>
-                    <Card.Body>
-                        <Card.Title>{movie.title}</Card.Title>
-                        <Card.Text>
-                            Overview: {movie.overview}
-                            <br />
-                            Release Date: {movie.release_date}
-                            <br />
-                            Rating: {movie.vote_average}
-                        </Card.Text>
-                        <Image src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} />
-                    </Card.Body>
-                </Card>
-            ))}
-        </>
-    );
+        {movies && movies.map((movie, index) => (
+            <Card key={index} style={{ width: '18rem', marginTop: '20px' }}>
+                <Card.Body>
+                    <Card.Title>{movie.title}</Card.Title>
+                    <Card.Text>
+                        Overview: {movie.overview}
+                        <br />
+                        Release Date: {movie.release_date}
+                        <br />
+                        Rating: {movie.vote_average}
+                    </Card.Text>
+                    <Image src={movie.image_url} />
+                </Card.Body>
+            </Card>
+        ))}
+    </>
+);
 };
 
 export default CityForm;

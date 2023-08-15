@@ -1,63 +1,74 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
-require('dotenv').config();
+const axios = require('axios');
 
 const app = express();
+const PORT = 3001;
+
 app.use(cors());
 
-const PORT = process.env.PORT || 3001;
-
+// Weather Route
 app.get('/weather', async (req, res) => {
     const { lat, lon } = req.query;
 
+    if (!lat || !lon) {
+        return res.status(400).send("Latitude and Longitude are required");
+    }
+
+    const API_ENDPOINT = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=hourly,minutely&units=metric&appid=${process.env.WEATHER_API_KEY}`;
+
     try {
-        const response = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily`, {
-            params: {
-                lat: lat,
-                lon: lon,
-                key: process.env.WEATHERBIT_API_KEY
-            }
+        const response = await axios.get(API_ENDPOINT);
+        const dailyData = response.data.daily;
+
+        const shapedData = dailyData.map(day => {
+            const date = new Date(day.dt * 1000).toISOString().split('T')[0];
+            const description = `Low of ${day.temp.min}, high of ${day.temp.max} with ${day.weather[0].description}`;
+            return { description, date };
         });
-        
-        const weatherData = {
-            description: response.data.data[0].weather.description,
-            date: response.data.data[0].valid_date
-        };
 
-        res.json(weatherData);
-
+        res.json(shapedData);
     } catch (error) {
-        res.status(500).json({ error: 'Unable to fetch weather data' });
+        res.status(500).send("Error fetching weather data");
     }
 });
 
+// Movie Route
+const MOVIE_API_BASE_URL = "https://api.themoviedb.org/3/search/movie";
+
 app.get('/movies', async (req, res) => {
-    const { city } = req.query;
+    const city = req.query.city;
+    if (!city) {
+        return res.status(400).send("City is required");
+    }
 
     try {
-        const response = await axios.get('https://api.themoviedb.org/3/search/movie', {
+        const response = await axios.get(MOVIE_API_BASE_URL, {
             params: {
+                api_key: process.env.MOVIE_API_KEY,
                 query: city,
-                api_key: process.env.TMDB_API_KEY
+                include_adult: false
             }
         });
-        
-        const movies = response.data.results.map(movie => ({
-            title: movie.title,
-            overview: movie.overview,
-            release_date: movie.release_date,
-            vote_average: movie.vote_average,
-            poster_path: movie.poster_path
-        }));
+
+        const movies = response.data.results.map(movie => {
+            return {
+                title: movie.title,
+                overview: movie.overview,
+                average_votes: movie.vote_average.toString(),
+                total_votes: movie.vote_count.toString(),
+                image_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+                popularity: movie.popularity.toString(),
+                released_on: movie.release_date
+            };
+        });
 
         res.json(movies);
-
     } catch (error) {
-        res.status(500).json({ error: 'Unable to fetch movie data' });
+        res.status(500).send("Error fetching movie data");
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

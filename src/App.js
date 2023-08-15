@@ -16,31 +16,28 @@ const CityForm = () => {
 
     const getWeather = async (lat, lon) => {
       try {
-          const response = await axios.get('/weather', {
+          const response = await axios.get(`https://api.openweathermap.org/data/2.5/onecall`, {
               params: {
                   lat: lat,
-                  lon: lon
+                  lon: lon,
+                  exclude: 'minutely,hourly',
+                  appid: process.env.REACT_APP_OPEN_WEATHER_API_KEY
               }
           });
-  
           if (response.status === 200 && response.data) {
-              setWeather([response.data]);
+              setWeather(response.data.daily);
           } else {
               console.error("Weather data not found in response.");
           }
-      } catch (error) {
-          if (error.response) {
-
-              console.error("Error fetching weather data:", error.response.data);
-          } else if (error.request) {
-           
-              console.error("No response received:", error.request);
-          } else {
-            
-              console.error("Error setting up request:", error.message);
-          }
+      } catch ({ response }) {
+          console.error("Error fetching weather data:", response?.data);
+          setError({
+              status: response?.status,
+              message: response?.data?.message
+          });
       }
   };
+  
   
     const getLocation = async city => {
         try {

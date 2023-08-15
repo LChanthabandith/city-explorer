@@ -12,7 +12,7 @@ app.get('/weather', async (req, res) => {
     const { lat, lon } = req.query;
 
     try {
-        const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
+        const response = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily`, {
             params: {
                 lat: lat,
                 lon: lon,
@@ -21,8 +21,8 @@ app.get('/weather', async (req, res) => {
         });
         
         const weatherData = {
-            description: response.data.weather[0].description,
-            date: new Date(response.data.dt * 1000).toISOString().split('T')[0] 
+            description: response.data.data[0].weather.description,
+            date: response.data.data[0].valid_date
         };
 
         res.json(weatherData);

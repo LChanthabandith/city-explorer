@@ -5,135 +5,146 @@ import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import Alert from 'react-bootstrap/Alert';
-import Movies from './components/Movies';
 
 const CityForm = () => {
-  const [city, setCity] = useState('');
-  const [location, setLocation] = useState(null);
-  const [mapUrl, setMapUrl] = useState(null);
-  const [error, setError] = useState(null);
-  const [movies, setMovies] = useState([]);
-  const [weather, setWeather] = useState([]);
+    const [city, setCity] = useState('');
+    const [location, setLocation] = useState(null);
+    const [mapUrl, setMapUrl] = useState(null);
+    const [error, setError] = useState(null);
+    const [movies, setMovies] = useState(null);
+    const [weather, setWeather] = useState([]);
 
-  const getWeather = async (lat, lon) => {
-    try {
-      const response = await axios.get('/weather', {
-        params: {
-          lat: lat,
-          lon: lon
+    const getWeather = async (lat, lon) => {
+        try {
+            const response = await axios.get('/weather', {
+                params: {
+                    lat: lat,
+                    lon: lon
+                }
+            });
+            setWeather([response.data]);
+        } catch (error) {
+            console.error("Error fetching weather data", error);
         }
-      });
-      setWeather(response.data);
-    } catch (error) {
-      console.error("Error fetching weather data", error);
-    }
-  };
+    };
 
-  const getLocation = async city => {
-    try {
-      const response = await axios.get(`https://us1.locationiq.com/v1/search.php`, {
-        params: {
-          key: process.env.REACT_APP_LOCATIONIQ_API_KEY,
-          q: city,
-          format: 'json',
-        },
-      });
-      return response.data[0];
-    } catch (error) {
-      setError({
-        status: error.response.status,
-        message: error.response.data.error,
-      });
-      return null;
-    }
-  };
-
-  const getMap = (lat, lon) => {
-    const url = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATIONIQ_API_KEY}&center=${lat},${lon}&zoom=10`;
-    return url;
-  }
-
-  const getMovies = async city => {
-    try {
-      const response = await axios.get(`https://api.themoviedb.org/3/search/movie`, {
-        params: {
-          query: city,
-          api_key: process.env.MOVIE_API_KEY
+    const getLocation = async city => {
+        try {
+            const response = await axios.get(`https://us1.locationiq.com/v1/search.php`, {
+                params: {
+                    key: process.env.REACT_APP_LOCATIONIQ_API_KEY,
+                    q: city,
+                    format: 'json',
+                },
+            });
+            return response.data[0];
+        } catch (error) {
+            setError({
+                status: error.response.status,
+                message: error.response.data.error,
+            });
+            return null;
         }
-      });
-      setMovies(response.data.results);
-    } catch (error) {
-      console.error('Error fetching movie data:', error);
-    }
-  };
+    };
 
-  const handleSubmit = async event => {
-    event.preventDefault();
-
-    if (city.trim() === '') {
-      setError({
-        status: 'Input Error',
-        message: 'Please enter a valid city name.'
-      });
-      return;
+    const getMap = (lat, lon) => {
+        return `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATIONIQ_API_KEY}&center=${lat},${lon}&zoom=10`;
     }
 
-    const locationData = await getLocation(city);
-    if (locationData) {
-      setLocation(locationData);
-      const mapUrl = getMap(locationData.lat, locationData.lon);
-      setMapUrl(mapUrl);
-      getWeather(locationData.lat, locationData.lon);
-      await getMovies(city);
-    }
-  };
+    const getMovies = async city => {
+        try {
+            const response = await axios.get('/movies', {
+                params: {
+                    city: city
+                }
+            });
+            setMovies(response.data);
+        } catch (error) {
+            console.error('Error fetching movie data:', error);
+        }
+    };
 
-  return (
-    <>
-      <Form onSubmit={handleSubmit}>
-        <Form.Group>
-          <Form.Label>City</Form.Label>
-          <Form.Control
-            type="text"
-            value={city}
-            onChange={e => setCity(e.target.value)}
-            placeholder="Enter city"
-          />
-        </Form.Group>
-        <Button variant="primary" type="submit">
-          Explore!
-        </Button>
-      </Form>
+    const handleSubmit = async event => {
+        event.preventDefault();
 
-      {weather.map(day => (
-        <div key={day.date}>
-          {day.date}: {day.description}
-        </div>
-      ))}
+        if(city.trim() === '') {
+            setError({
+                status: 'Input Error',
+                message: 'Please enter a valid city name.'
+            });
+            return;
+        }
 
-      {error && (
-        <Alert variant="danger">
-          Error {error.status}: {error.message}
-        </Alert>
-      )}
+        const locationData = await getLocation(city);
+        if (locationData) {
+            setLocation(locationData);
+            const mapUrl = getMap(locationData.lat, locationData.lon);
+            setMapUrl(mapUrl);
+            getWeather(locationData.lat, locationData.lon);
+            await getMovies(city);
+        }
+    };
 
-      {location && (
-        <Card style={{ width: '18rem' }}>
-          <Card.Body>
-            <Card.Title>{location.display_name}</Card.Title>
-            <Card.Text>
-              Latitude: {location.lat}
-              <br />
-              Longitude: {location.lon}
-            </Card.Text>
-            {mapUrl && <Image src={mapUrl} alt="City Map" />}
-          </Card.Body>
-        </Card>
-      )}
+    return (
+        <>
+            <Form onSubmit={handleSubmit}>
+                <Form.Group>
+                    <Form.Label>City</Form.Label>
+                    <Form.Control
+                        type="text"
+                        value={city}
+                        onChange={e => setCity(e.target.value)}
+                        placeholder="Enter city"
+                    />
+                </Form.Group>
+                <Button variant="primary" type="submit">
+                    Explore!
+                </Button>
+            </Form>
 
-      <Movies movies={movies} />
-    </>
-  );
+            {weather.map(day => (
+                <div key={day.date}>
+                    {day.date}: {day.description}
+                </div>
+            ))}
+
+            {error && (
+                <Alert variant="danger">
+                    Error {error.status}: {error.message}
+                </Alert>
+            )}
+
+            {location && (
+                <Card style={{ width: '18rem' }}>
+                    <Card.Body>
+                        <Card.Title>{location.display_name}</Card.Title>
+                        <Card.Text>
+                            Latitude: {location.lat}
+                            <br />
+                            Longitude: {location.lon}
+                        </Card.Text>
+                        {mapUrl && <Image src={mapUrl} />}
+                    </Card.Body>
+                </Card>
+            )}
+
+            {movies && movies.map((movie, index) => (
+                <Card key={index} style={{ width: '18rem', marginTop: '20px' }}>
+                    <Card.Body>
+                        <Card.Title>{movie.title}</Card.Title>
+                        <Card.Text>
+                            Overview: {movie.overview}
+                            <br />
+                            Release Date: {movie.release_date}
+                            <br />
+                            Rating: {movie.vote_average}
+                        </Card.Text>
+                        <Image src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} />
+                    </Card.Body>
+                </Card>
+            ))}
+        </>
+    );
 };
 
 export default CityForm;

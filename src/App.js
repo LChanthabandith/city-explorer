@@ -12,22 +12,22 @@ const CityForm = () => {
   const [location, setLocation] = useState(null);
   const [mapUrl, setMapUrl] = useState(null);
   const [error, setError] = useState(null);
-  const [movies, setMovies] = useState(null);
+  const [movies, setMovies] = useState([]);
   const [weather, setWeather] = useState([]);
 
   const getWeather = async (lat, lon) => {
     try {
-        const response = await axios.get('/weather', {
-            params: {
-                lat: lat,
-                lon: lon
-            }
-        });
-        setWeather(response.data);
+      const response = await axios.get('/weather', {
+        params: {
+          lat: lat,
+          lon: lon
+        }
+      });
+      setWeather(response.data);
     } catch (error) {
-        console.error("Error fetching weather data", error);
+      console.error("Error fetching weather data", error);
     }
-};
+  };
 
   const getLocation = async city => {
     try {
@@ -49,8 +49,8 @@ const CityForm = () => {
   };
 
   const getMap = (lat, lon) => {
-    const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATIONIQ_API_KEY}&center=${lat},${lon}&zoom=10`;
-    return mapUrl;
+    const url = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATIONIQ_API_KEY}&center=${lat},${lon}&zoom=10`;
+    return url;
   }
 
   const getMovies = async city => {
@@ -65,13 +65,12 @@ const CityForm = () => {
     } catch (error) {
       console.error('Error fetching movie data:', error);
     }
-};
-  
+  };
 
   const handleSubmit = async event => {
     event.preventDefault();
 
-    if(city.trim() === '') {
+    if (city.trim() === '') {
       setError({
         status: 'Input Error',
         message: 'Please enter a valid city name.'
@@ -107,10 +106,10 @@ const CityForm = () => {
       </Form>
 
       {weather.map(day => (
-                <div key={day.date}>
-                    {day.date}: {day.description}
-                </div>
-            ))}     
+        <div key={day.date}>
+          {day.date}: {day.description}
+        </div>
+      ))}
 
       {error && (
         <Alert variant="danger">
@@ -127,13 +126,14 @@ const CityForm = () => {
               <br />
               Longitude: {location.lon}
             </Card.Text>
-            {mapUrl && <Image src={mapUrl} />}
+            {mapUrl && <Image src={mapUrl} alt="City Map" />}
           </Card.Body>
         </Card>
       )}
 
-<Movies movies={movies} />
-  </>
-);
+      <Movies movies={movies} />
+    </>
+  );
+};
 
 export default CityForm;

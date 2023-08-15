@@ -16,13 +16,13 @@ app.get('/weather', async (req, res) => {
             params: {
                 lat: lat,
                 lon: lon,
-                appid: process.env.WEATHERBIT_API_KEY
+                key: process.env.WEATHERBIT_API_KEY
             }
         });
         
         const weatherData = {
-            description: response.data.weather[0].description,
-            date: new Date(response.data.dt * 1000).toISOString().split('T')[0]
+            description: response.data.data[0].weather.description,
+            date: new Date(response.data.data[0].datetime).toISOString().split('T')[0]
         };
 
         res.json(weatherData);
@@ -57,9 +57,10 @@ app.get('/movies', async (req, res) => {
 
         const moviesData = response.data.results.map(movie => new Movie(movie));
 
-        res.json(moviesData);
+        res.status(200).json(moviesData);
 
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Unable to fetch movie data' });
     }
 });

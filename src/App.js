@@ -55,17 +55,17 @@ const CityForm = () => {
 
   const getMovies = async city => {
     try {
-      const response = await axios.get(`YOUR_BACKEND_ENDPOINT/movies`, {
+      const response = await axios.get(`https://api.themoviedb.org/3/search/movie`, {
         params: {
-          city: city,
-          apiKey: process.env.REACT_APP_MOVIE_API_KEY
+          query: city,
+          api_key: process.env.REACT_APP_MOVIE_API_KEY
         }
       });
-      setMovies(response.data);
+      setMovies(response.data.results);
     } catch (error) {
       console.error('Error fetching movie data:', error);
     }
-  };
+};
   
 
   const handleSubmit = async event => {

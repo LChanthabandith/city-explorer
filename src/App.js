@@ -33,7 +33,7 @@ const CityForm = () => {
     try {
       const response = await axios.get(`https://us1.locationiq.com/v1/search.php`, {
         params: {
-          key: process.env.LOCATIONIQ_API_KEY,
+          key: process.env.REACT_APP_LOCATIONIQ_API_KEY,
           q: city,
           format: 'json',
         },

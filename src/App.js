@@ -33,7 +33,7 @@ const CityForm = () => {
     try {
       const response = await axios.get(`https://us1.locationiq.com/v1/search.php`, {
         params: {
-          key: process.env.REACT_APP_LOCATIONIQ_API_KEY,
+          key: process.env.LOCATIONIQ_API_KEY,
           q: city,
           format: 'json',
         },
@@ -58,7 +58,7 @@ const CityForm = () => {
       const response = await axios.get(`https://api.themoviedb.org/3/search/movie`, {
         params: {
           query: city,
-          api_key: process.env.REACT_APP_MOVIE_API_KEY
+          api_key: process.env.MOVIE_API_KEY
         }
       });
       setMovies(response.data.results);

@@ -18,7 +18,7 @@ const CityForm = () => {
     const getWeather = async (city) => {
       try {
           const API_KEY = "86de4b6eda4fb40d873a7b997839161f";
-          const ENDPOINT = `http://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${API_KEY}&units=imperial`;
+          const ENDPOINT = `https://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${API_KEY}&units=imperial`;
           
           const response = await axios.get(ENDPOINT);
 
@@ -69,7 +69,7 @@ const CityForm = () => {
       try {
           const API_KEY = "c1f4456f";
           const currentYear = new Date().getFullYear();
-          const ENDPOINT = `http://www.omdbapi.com/?s=${currentYear}&apikey=${API_KEY}&type=movie&y=${currentYear}`;
+          const ENDPOINT = `https://www.omdbapi.com/?s=${currentYear}&apikey=${API_KEY}&type=movie&y=${currentYear}`;
   
           const response = await axios.get(ENDPOINT);
   

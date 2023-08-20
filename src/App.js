@@ -14,29 +14,26 @@ const CityForm = () => {
     const [movies, setMovies] = useState(null);
     const [weather, setWeather] = useState([]);
 
-    const getWeather = async (lat, lon) => {
+    const getWeather = async (city) => {
       try {
-          const response = await axios.get(`https://api.openweathermap.org/data/2.5/onecall`, {
+          const response = await axios.get('http://localhost:3001/weather', {
               params: {
-                  lat: lat,
-                  lon: lon,
-                  exclude: 'minutely,hourly',
-                  appid: process.env.REACT_APP_OPEN_WEATHER_API_KEY
+                  city: city
               }
           });
           if (response.status === 200 && response.data) {
-              setWeather(response.data.daily);
+              setWeather([response.data]);
           } else {
               console.error("Weather data not found in response.");
           }
-      } catch ({ response }) {
-          console.error("Error fetching weather data:", response?.data);
+      } catch (error) {
+          console.error("Error fetching weather data:", error?.response?.data);
           setError({
-              status: response?.status,
-              message: response?.data?.message
+              status: error?.response?.status,
+              message: error?.response?.data?.message || 'Something went wrong'
           });
       }
-  };
+    };
   
   
     const getLocation = async city => {
@@ -63,23 +60,23 @@ const CityForm = () => {
     }
 
     const getMovies = async city => {
-        try {
-            const response = await axios.get('/movies', {
-                params: {
-                    city: city
-                }
-            });
-            setMovies(response.data);
-        } catch (error) {
-            console.error('Error fetching movie data:', error);
-        }
-    };
+      try {
+          const response = await axios.get('http://localhost:3001/movies', {
+              params: {
+                  city: city
+              }
+          });
+          setMovies(response.data);
+      } catch (error) {
+          console.error('Error fetching movie data:', error);
+      }
+  };
 
     const handleSubmit = async event => {
       event.preventDefault();
       setError(null);
 
-      if(city.trim() === '') {
+      if (city.trim() === '') {
           setError({
               status: 'Input Error',
               message: 'Please enter a valid city name.'
@@ -92,7 +89,7 @@ const CityForm = () => {
           setLocation(locationData);
           const mapUrl = getMap(locationData.lat, locationData.lon);
           setMapUrl(mapUrl);
-          getWeather(locationData.lat, locationData.lon);
+          await getWeather(city);
           await getMovies(city);
       }
   };
@@ -133,12 +130,16 @@ const CityForm = () => {
                 </Card.Body>
             </Card>
         )}
-
-        {weather.map(day => (
-            <div key={day.date}>
-                {day.date}: {day.description}
-            </div>
-        ))}
+    
+    {weather.map((day, index) => (
+        <div key={index}>
+            Date: Today
+            <br />
+            Description: {day.description}
+            <br />
+            Temperature: {day.temperature}
+        </div>
+    ))}
 
         {movies && movies.map((movie, index) => (
             <Card key={index} style={{ width: '18rem', marginTop: '20px' }}>

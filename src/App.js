@@ -5,6 +5,8 @@ import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import Alert from 'react-bootstrap/Alert';
+import Weather from './component/Weather';
+import Movies from './component/Movies';
 
 const CityForm = () => {
     const [city, setCity] = useState('');
@@ -150,28 +152,9 @@ return (
           </Card>
       )}
 
-      {weather && weather.map((day, index) => (
-          <div key={index}>
-              Date: Today
-              <br />
-              Description: {day.description ? day.description : "No description available."}
-              <br />
-              Temperature: {day.temperature ? day.temperature : "No temperature available."}
-          </div>
-      ))}
+<Weather weatherData={weather} />
 
-{movies && movies.map((movie, index) => (
-    <Card key={index} style={{ width: '18rem', marginTop: '20px' }}>
-        <Card.Body>
-            <Card.Title>{movie.Title}</Card.Title>
-            <Card.Text>
-                Year: {movie.Year}
-                <br />
-            </Card.Text>
-            <Image src={movie.Poster} />
-        </Card.Body>
-    </Card>
-))}
+<Movies moviesData={movies} />
 
   </>
 );

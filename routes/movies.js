@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 exports.getMovieData = async (year) => {
-    const API_KEY = "c1f4456f";
+    const API_KEY = process.env.REACT_APP_OMDB_API_KEY;
     const ENDPOINT = `https://www.omdbapi.com/?s=${year}&apikey=${API_KEY}&type=movie&y=${year}`;
 
     try {
